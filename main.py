@@ -6,18 +6,7 @@ from telethon import TelegramClient
 from telethon.tl import functions
 from telethon.errors.rpcerrorlist import ChatForwardsRestrictedError
 from textwrap import indent
-
-# str derivation is needed because for some reason
-# you can't directly use enum values as dict keys
-# because they return tuples
-class Env(str, Enum):
-		NAME = "T_NAME",
-		API_ID = "T_API_ID",
-		API_HASH = "T_API_HASH",
-		IGNORE_CHAR = "T_IGNORE_CHAR",
-		FOLDER_NAME = "T_FOLDER_NAME",
-		FWD_TO = "T_FWD_TO",
-		KW_FILENAME = "T_KW_FILENAME",
+from helper import get_client, Env
 
 class Flags(str, Enum):
 		DRY_RUN = "--dry-run",
@@ -27,11 +16,7 @@ class Flags(str, Enum):
 		CHECK_ALL = "--check-all",
 
 cfg = dotenv_values()
-client = TelegramClient(
-		cfg[Env.NAME],
-		cfg[Env.API_ID],
-		cfg[Env.API_HASH],
-)
+client = get_client()
 
 def std_pos(s: str):
 		return f"\033[32m{s}\033[0m"
@@ -82,9 +67,9 @@ async def main():
 									continue
 								
 								try:
-										await client.forward_messages(cfg[Env.FWD_TO], msg)
+										await client.forward_messages(int(cfg[Env.FWD_TO]), msg)
 								except ChatForwardsRestrictedError:
-										await client.send_message(cfg[Env.FWD_TO], msg.text)
+										await client.send_message(int(cfg[Env.FWD_TO]), msg.text)
 						elif log_mismatch:
 								print(f"\n{std_neg("mismatch:")}\n", indent(msg.text, " " * 4), end="\n")
 						
