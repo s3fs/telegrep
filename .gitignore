@@ -13,3 +13,8 @@ wheels/
 *.session
 *.python*
 keywords
+
+*ruff*
+*.db
+logs*
+modelfile
