@@ -4,11 +4,12 @@ from sys import argv
 from enum import Enum
 from dotenv import dotenv_values
 from telethon.tl import functions
-from telethon.errors.rpcerrorlist import FloodWaitError
+from telethon.errors.rpcerrorlist import FloodWaitError, MessageTooLongError
 from helper import get_client, Env, get_padded_match
 from difflib import SequenceMatcher
 from datetime import datetime
 
+INFO_PREFIX = "[INFO]"
 
 class Flags(str, Enum):
     DRY_RUN = ("--dry-run",)
@@ -63,16 +64,15 @@ async def main():
     )
     chat_ids = [chat["channel_id"] for chat in folder["include_peers"]]
 
-    # TODO: add progress tracking
 
     async for chat in client.iter_dialogs():
         if chat.entity.id in chat_ids and (chat.unread_count != 0 or check_all):
-            print(f"[INFO] Checking {chat.name} ({chat.entity.id})...")
+            print(f"{std_pos(INFO_PREFIX)} Checking {chat.name} ({chat.entity.id})...")
             for msg in await client.get_messages(chat, chat.unread_count):
                 link = f"https://t.me/c/{chat.entity.id}/{msg.id}"
 
                 if not msg.text:
-                    print(f"[INFO] No text in message ({link})", msg)
+                    print(f"{std_neg(INFO_PREFIX)} No text in message ({link})", msg)
                     continue
 
                 # skip messages similar to ones that we've already encountered
@@ -81,7 +81,7 @@ async def main():
                     for prev_msg in prev_msgs
                 ):
                     print(
-                        f"[INFO] Message {rat * 100}% similar to the one already encountered"
+                        f"{std_neg(INFO_PREFIX)} Message {rat * 100}% similar to the one already encountered"
                     )
                     duplicates += 1
                     continue
@@ -111,6 +111,8 @@ async def main():
                             int(cfg[Env.FWD_TO]),
                             payload,
                         )
+                    except MessageTooLongError:
+                        print(f"{std_neg(INFO_PREFIX)} Message too long:", payload)
                 elif log_mismatch and mismatch:
                     print(
                         f"{std_neg('mismatch:')} ...{mismatch.group()}... @ {chat.name} ({link})"
