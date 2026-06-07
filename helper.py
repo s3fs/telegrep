@@ -1,7 +1,7 @@
 from enum import Enum
 from dotenv import dotenv_values
 from telethon import TelegramClient
-from re import IGNORECASE, search
+from re import IGNORECASE, escape, search
 
 
 # str derivation is needed because for some reason
@@ -29,5 +29,18 @@ def get_client():
     return client
 
 
+def std_pos(s: str):
+    return f"\033[32m{s}\033[0m"
+
+
+def std_neg(s: str):
+    return f"\033[33m{s}\033[0m"
+
+
+def std_dire(s: str):
+    return f"\033[31m{s}\033[0m"
+
+
 def get_padded_match(kw, txt, p=100):
-    return search(rf"([\s\S]{{0,{p}}})({kw})([\s\S]{{0,{p}}})", txt, flags=IGNORECASE)
+    escaped = "|".join(escape(w) for w in kw)
+    return search(rf"([\s\S]{{0,{p}}})({escaped})([\s\S]{{0,{p}}})", txt, flags=IGNORECASE)

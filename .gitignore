@@ -18,3 +18,4 @@ keywords
 *.db
 logs*
 modelfile
+*DS*

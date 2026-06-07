@@ -5,11 +5,12 @@ from enum import Enum
 from dotenv import dotenv_values
 from telethon.tl import functions
 from telethon.errors.rpcerrorlist import FloodWaitError, MessageTooLongError
-from helper import get_client, Env, get_padded_match
+from helper import get_client, Env, get_padded_match, std_pos, std_neg
 from difflib import SequenceMatcher
 from datetime import datetime
 
 INFO_PREFIX = "[INFO]"
+MATCH_PAD = 100
 
 class Flags(str, Enum):
     DRY_RUN = ("--dry-run",)
@@ -21,14 +22,6 @@ class Flags(str, Enum):
 
 cfg = dotenv_values()
 client = get_client()
-
-
-def std_pos(s: str):
-    return f"\033[32m{s}\033[0m"
-
-
-def std_neg(s: str):
-    return f"\033[33m{s}\033[0m"
 
 
 async def main():
@@ -88,8 +81,8 @@ async def main():
                 else:
                     prev_msgs.append(msg.text)
 
-                match = get_padded_match("|".join(KEYWORDS), msg.text)
-                mismatch = get_padded_match("|".join(IGNORE), msg.text)
+                match = get_padded_match(KEYWORDS, msg.text, MATCH_PAD)
+                mismatch = get_padded_match(IGNORE, msg.text, MATCH_PAD)
                 payload = f"{msg.text}\n\n({link})"
 
                 if match and not mismatch:
